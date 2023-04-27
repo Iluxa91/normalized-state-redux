@@ -13,5 +13,3 @@ export const App: React.FC<{ store: any }> = ({store}) => {
 
     );
 }
-
-export default App;
