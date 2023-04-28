@@ -2,7 +2,16 @@ import {api, PostType} from "../api/api";
 import {Dispatch} from "redux";
 
 const initialState = {
-    items: [] as PostType[]
+    // items: [] as PostType[],
+    allIds: [] as number[],
+    byId: {} as { [key: string]: PostType }
+}
+
+const mapToLookUpTable = (items: any[]) => {
+    return items.reduce((acc, item) => {
+        acc[item.id] = item
+        return acc
+    }, {})
 }
 
 export const postsReducer = (state = initialState, action:
@@ -11,22 +20,30 @@ export const postsReducer = (state = initialState, action:
     switch (action.type) {
         case "posts/fetchPostsSuccess": {
             return {
-                ...state, items: action.payload.posts
+                ...state,
+                // items: action.payload.posts,
+                allIds: action.payload.posts.map(p => p.id),
+                byId: mapToLookUpTable(action.payload.posts)
+
             }
         }
         case "posts/updatePostSuccess": {
             return {
                 ...state,
-                items: state.items.map((post) =>
-                    post.id === action.payload.postId ?
-                        {
-                            ...post, text: action.payload.text
-                        } : post)
+                // items: state.items.map((post) => post.id === action.payload.postId ? {...post, text: action.payload.text} : post)
+                byId: {
+                    ...state.byId,
+                    [action.payload.postId]: {
+                        ...state.byId[action.payload.postId],
+                        text: action.payload.text
+                    }
+                }
             }
         }
-        default:
-            return state
+
     }
+
+    return state
 }
 
 export const fetchPostsSuccess = (posts: PostType[]) => ({
