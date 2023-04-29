@@ -1,12 +1,13 @@
 import React, {useState} from "react";
-import {PostType} from "../../api/api";
 import {useDispatch, useSelector} from "react-redux";
-import {updatePost} from "../reducer";
+import {PostType, updatePost} from "../posts-reducer";
 import {AppStateType} from "../app/store";
+import {AuthorApiType} from "../../api/api";
 
 export const Post: React.FC<{ postId: number }> = ({postId}) => {
 
     const post = useSelector<AppStateType, PostType>(state => state.posts.byId[postId])
+    const author = useSelector<AppStateType, AuthorApiType>(state => state.authors.byId[post.authorId])
     console.log(post)
     const [editMode, setEditMode] = useState(false)
     const [text, setText] = useState(post.text)
@@ -14,10 +15,11 @@ export const Post: React.FC<{ postId: number }> = ({postId}) => {
 
     return (
         <div>
-            <b>{post.author.name} </b>
+            <b>{author.name} </b>
             <br/>
             {!editMode &&
                 <span onDoubleClick={() => setEditMode(true)}>{post.text}</span>}
+
             {editMode && <textarea onBlur={() => {
                 setEditMode(false)
                 dispatch(updatePost(post.id, text))

@@ -1,17 +1,30 @@
-import {api, PostType} from "../api/api";
+import {api, PostApiType} from "../api/api";
 import {Dispatch} from "redux";
+
+export type PostType = {
+    id: number
+    text: string
+    likes: number
+    authorId: number
+}
 
 const initialState = {
     // items: [] as PostType[],
-    allIds: [] as number[],
+    allPostsIds: [] as number[],
     byId: {} as { [key: string]: PostType }
+
+
 }
 
-const mapToLookUpTable = (items: any[]) => {
+type LookUpTableType<T> = {[key: string]:T}
+
+
+export const mapToLookUpTable = <T extends {id: number}>(items: T[]) => {
+    const acc: LookUpTableType<T> = {}
     return items.reduce((acc, item) => {
         acc[item.id] = item
         return acc
-    }, {})
+    }, acc)
 }
 
 export const postsReducer = (state = initialState, action:
@@ -22,8 +35,16 @@ export const postsReducer = (state = initialState, action:
             return {
                 ...state,
                 // items: action.payload.posts,
-                allIds: action.payload.posts.map(p => p.id),
-                byId: mapToLookUpTable(action.payload.posts)
+                allPostsIds: action.payload.posts.map(p => p.id),
+                byId: mapToLookUpTable(action.payload.posts.map(p => {
+                    const copy: PostType = {
+                        id: p.id,
+                        text: p.text,
+                        authorId: p.author.id,
+                        likes: p.likes
+                    }
+                    return copy
+                }))
 
             }
         }
@@ -46,7 +67,7 @@ export const postsReducer = (state = initialState, action:
     return state
 }
 
-export const fetchPostsSuccess = (posts: PostType[]) => ({
+export const fetchPostsSuccess = (posts: PostApiType[]) => ({
     type: "posts/fetchPostsSuccess",
     payload: {posts}
 } as const)

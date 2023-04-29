@@ -1,11 +1,16 @@
 import {applyMiddleware, combineReducers, createStore} from "redux";
-import {postsReducer} from "../reducer";
+import {postsReducer} from "../posts-reducer";
 import thunkMiddleware from "redux-thunk";
+import {authorsReducer} from "../authors-reducer";
 
 
 const rootReducer = combineReducers({
-    posts: postsReducer
+    posts: postsReducer,
+    authors: authorsReducer
 })
 
 export type AppStateType = ReturnType<typeof rootReducer>
 export const store = createStore(rootReducer, applyMiddleware(thunkMiddleware))
+
+// @ts-ignore
+window.store = store
