@@ -1,11 +1,13 @@
 import {api, PostApiType} from "../api/api";
 import {Dispatch} from "redux";
+import {deletePostCommentSuccess, fetchPostCommentsSuccess} from "./comments-reducer";
 
 export type PostType = {
     id: number
     text: string
     likes: number
     authorId: number
+    commentsIds: number[]
 }
 
 const initialState = {
@@ -16,10 +18,10 @@ const initialState = {
 
 }
 
-type LookUpTableType<T> = {[key: string]:T}
+type LookUpTableType<T> = { [key: string]: T }
 
 
-export const mapToLookUpTable = <T extends {id: number}>(items: T[]) => {
+export const mapToLookUpTable = <T extends { id: number }>(items: T[]) => {
     const acc: LookUpTableType<T> = {}
     return items.reduce((acc, item) => {
         acc[item.id] = item
@@ -29,7 +31,9 @@ export const mapToLookUpTable = <T extends {id: number}>(items: T[]) => {
 
 export const postsReducer = (state = initialState, action:
     | ReturnType<typeof fetchPostsSuccess>
-    | ReturnType<typeof updatePostsSuccess>) => {
+    | ReturnType<typeof updatePostsSuccess>
+    | ReturnType<typeof fetchPostCommentsSuccess>
+    | ReturnType<typeof deletePostCommentSuccess>) => {
     switch (action.type) {
         case "posts/fetchPostsSuccess": {
             return {
@@ -41,11 +45,24 @@ export const postsReducer = (state = initialState, action:
                         id: p.id,
                         text: p.text,
                         authorId: p.author.id,
-                        likes: p.likes
+                        likes: p.likes,
+                        commentsIds: p.lastComments.map(c => c.id)
+
                     }
                     return copy
                 }))
 
+            }
+        }
+        case "posts/fetchPostCommentsSuccess": {
+            return {
+                ...state, byId: {
+                    ...state.byId,
+                    [action.payload.postId]: {
+                        ...state.byId[action.payload.postId],
+                        commentsIds: action.payload.comments.map(c => c.id)
+                    }
+                }
             }
         }
         case "posts/updatePostSuccess": {
@@ -57,6 +74,18 @@ export const postsReducer = (state = initialState, action:
                     [action.payload.postId]: {
                         ...state.byId[action.payload.postId],
                         text: action.payload.text
+                    }
+                }
+            }
+        }
+        case "posts/deletePostCommentSuccess": {
+            const post = state.byId[action.payload.postId]
+            return {
+                ...state, byId: {
+                    ...state.byId,
+                    [action.payload.postId]: {
+                        ...post,
+                        commentsIds: post.commentsIds.filter(id => id !== action.payload.commentId)
                     }
                 }
             }

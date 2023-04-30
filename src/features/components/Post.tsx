@@ -3,6 +3,8 @@ import {useDispatch, useSelector} from "react-redux";
 import {PostType, updatePost} from "../posts-reducer";
 import {AppStateType} from "../app/store";
 import {AuthorApiType} from "../../api/api";
+import {Comment} from "./Comment";
+import {fetchPostComments, fetchPostCommentsSuccess} from "../comments-reducer";
 
 export const Post: React.FC<{ postId: number }> = ({postId}) => {
 
@@ -27,6 +29,14 @@ export const Post: React.FC<{ postId: number }> = ({postId}) => {
             <br/>
             Likes: {post.likes}
             <hr/>
+            Comments:
+            <ul>
+                {post.commentsIds.map(id => <Comment key={id} id={id} postId={postId}/>)}
+            </ul>
+            <button onClick={() => dispatch(fetchPostComments(postId))}>show all
+                comments
+            </button>
         </div>
     );
 };
+
